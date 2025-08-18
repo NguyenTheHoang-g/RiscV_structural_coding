@@ -1,6 +1,20 @@
-module Instruction_mem(
-input logic clk, rst,
-input logic [31:0] read_addr,
-output logic [31:0] instruction_out);
+
+module Instruction_mem  (
+  input      [$clog2(8192)-1:0] addr_i    , // Address input
+  output reg [             31:0] data_out_o  // Data output
+);
+
+  wire [$clog2(DEPTH)-3:0] mem_addr;
+  assign mem_addr = addr_i[$clog2(8192)-1:2];
+
+  reg [3:0][7:0] imem[8192/4]; // 32-bit memory array
+
+  initial begin
+    $readmemh("imem.hex", imem);
+  end
+
+  always_comb begin : proc_data
+    data_out_o = imem[mem_addr][3:0];
+  end
 
 endmodule
