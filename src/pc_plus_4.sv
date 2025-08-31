@@ -4,12 +4,12 @@ module pc_plus_4(
     output logic        carry_out
 );
     
-	logic [29:0] pc_next;
-    adder_nbit #(.WIDTH(29)) u_adder (
-        .a_i(pc_i[31:2]),
-        .b_i(29'b1),
+	logic [31:0] pc_next;
+    adder_32bit u_adder (
+        .a_i(pc_i),
+        .b_i(32'd4),
         .s_o(pc_next),
         .c_o(carry_out)
     );
-	 assign pc_o = {pc_next, 2'b00};
+	 assign pc_o = pc_next;
 endmodule
