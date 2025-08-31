@@ -25,13 +25,15 @@ module top (
     logic [3:0] alu_op;
     logic [2:0] funct3;
     logic [11:0] ctrl_signal;
-    logic [17:0] Opcode_F3_F7_brless_breq; // {opcode[6:0], funct3[2:0], funct7[6:0], br_less, br_equal}
+    logic [10:0] Opcode_F3_F7_brless_breq;
     logic br_un, br_less, br_equal;
     
     logic [31:0] lsu_data_out;
     logic opa_sel, opb_sel;
     logic [31:0] rs2_im;
 
+	  wire PCSel;
+    wire [1:0] wb_sel;
     // Program Counter
     Program_Counter pc (
         .clk(clk),
@@ -49,7 +51,7 @@ module top (
 
     // Instruction Memory
     Instruction_mem imem (
-        .addr_i (pc_out),
+        .addr_i (pc_out[12:0]),
         .data_out_o(instruction_out)
     );
 
@@ -74,7 +76,7 @@ module top (
 
 	 mux2to1_32 imux21(.in0(rs1_data), .in1(pc_out), .sel(opa_sel), .o(pc_rs1));
 	 mux2to1_32 imux21_2(.in0(rs2_data), .in1(imm_out), .sel(opb_sel), .o(rs2_im));
-	 mux2to1_32 imux21_3( .in0(pc_plus_4_out), .in1( alu_result), .sel(PCSel ), .o(pc_out)); 
+	 mux2to1_32 imux21_3( .in0(pc_plus_4_out), .in1( alu_result), .sel(PCSel ), .o(pc_in)); 
 
     // ALU
     alu_structural alu (
@@ -126,16 +128,15 @@ module top (
     );
 
     // Form Opcode_F3_F7_brless_breq
-    assign Opcode_F3_F7_brless_breq = {instruction_out[6:0],    // opcode
+    assign Opcode_F3_F7_brless_breq = {instruction_out[6:2],    // opcode
                                        instruction_out[14:12],  // funct3
-                                       instruction_out[31:25],  // funct7
+                                       instruction_out[30],  // funct7
                                        br_less,                 // br_less
                                        br_equal};               // br_equal
 
     // Signal unpacking from control_signal (12 bits)
-    logic PCSel;
-    logic [1:0] wb_sel;
-    assign {PCSel, rd_wren, opa_sel, opb_sel, alu_op, wb_sel, lsu_wren} = ctrl_signal;
+   
+    assign {PCSel, rd_wren,br_un, opa_sel, opb_sel, alu_op, wb_sel, lsu_wren} = ctrl_signal;
 
     
     
