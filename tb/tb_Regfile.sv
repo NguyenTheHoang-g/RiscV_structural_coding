@@ -43,7 +43,8 @@ module tb_Regfile;
       rs1_addr = rs1;
       rs2_addr = rs2;
       @(posedge clk);
-      $display("Read rs1(x%0d) = 0x%08x, rs2(x%0d) = 0x%08x", rs1, rs1_data_o, rs2, rs2_data_o);
+      $display("Read rs1(x%0d) = 0x%08x, rs2(x%0d) = 0x%08x",
+                rs1, rs1_data_o, rs2, rs2_data_o);
     end
   endtask
 
@@ -51,17 +52,17 @@ module tb_Regfile;
   initial begin
     $display("Starting testbench for Regfile...");
     clk = 0;
-    rst = 0;
+    rst = 1;       // bật reset ngay từ đầu
     rd_wren = 0;
     rd_addr = 0;
     rd_data = 0;
     rs1_addr = 0;
     rs2_addr = 0;
 
-    // Apply reset
-    #2; rst = 0;
-    #5; rst = 1;
-    #5;
+    // Giữ reset trong 2 chu kỳ clock
+    repeat (2) @(posedge clk);
+    rst = 0;       // thả reset
+    @(posedge clk); // chờ thêm 1 cạnh sau khi reset hạ
 
     // Check if x2 is initialized to 2048
     read_regs(5'd2, 5'd0);
