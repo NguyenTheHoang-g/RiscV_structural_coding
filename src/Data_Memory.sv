@@ -1,32 +1,28 @@
-module Data_Memory (
-    input  logic         clk,
-    input  logic         reset,
-    input  logic         MemWrite,
-    input  logic         MemRead,
-    input  logic [31:0]  read_address,
-    input  logic [31:0]  Write_data,
-    output logic [31:0]  MemData_out
+module data_memory (
+    input             clk,
+    input             reset_n,
+    input             enable,                  // <== thêm
+    input      [10:0] load_store_address,
+    input      [31:0] data_in,
+    input             store_enable,
+    output reg [31:0] data_out
 );
+    // BRAM 2048 x 32
+    reg [31:0] mem [0:2047];
 
-    logic [31:0] D_Memory [0:63]; // 64 ô nhớ, mỗi ô 32-bit
-
-    
-    always_ff @(posedge clk or posedge reset) begin
-        if (reset) begin
-            for (int k = 0; k < 64; k++) begin
-                D_Memory[k] <= 32'b0;
-            end
-        end else if (MemWrite) begin
-            D_Memory[read_address] <= Write_data;
-        end
-    end
-
-    always_comb begin
-        if (MemRead) begin
-            MemData_out = D_Memory[read_address];
+    always @(posedge clk) begin
+        if (enable) begin
+            if (store_enable)
+                mem[load_store_address] <= data_in; // synchronous write
+            data_out <= mem[load_store_address];    // synchronous read
         end else begin
-            MemData_out = 32'b0;
+            data_out <= 32'd0;
         end
     end
 
+    integer i;
+    initial begin
+        for (i = 0; i < 2048; i = i + 1)
+            mem[i] = 32'd0;
+    end
 endmodule
